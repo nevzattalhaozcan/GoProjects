@@ -20,7 +20,13 @@ func main() {
 	// 	createdAt: time.Now(),
 	// }
 
-	appUser, err := user.NewUser(firstName, lastName, birthdate)
+	admin := user.NewAdmin("example@test.com", "test123")
+
+	admin.OutputUserDetails()
+	admin.ClearUserName()
+	admin.OutputUserDetails()
+
+	appUser, err := user.New(firstName, lastName, birthdate)
 	if err != nil {
 		fmt.Println(err)
 		return

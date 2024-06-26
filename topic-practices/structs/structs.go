@@ -6,6 +6,8 @@ import (
 	"example.com/structs/user"
 )
 
+type str string // we can create our custom types using built-in types
+
 func main() {
 	firstName := getUserData("Please enter your first name: ")
 	lastName := getUserData("Please enter your last name: ")

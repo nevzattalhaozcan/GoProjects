@@ -8,6 +8,10 @@ import (
 
 type str string // we can create our custom types using built-in types
 
+func (str) someMethod() {
+	// we can use built in types as "receiver" so we can use custom built-in types
+}
+
 func main() {
 	firstName := getUserData("Please enter your first name: ")
 	lastName := getUserData("Please enter your last name: ")
@@ -37,6 +41,10 @@ func main() {
 	appUser.OutputUserDetails()
 	appUser.ClearUserName()
 	appUser.OutputUserDetails()
+
+	var somethingCool str = "Cool!"
+	fmt.Println(somethingCool)
+	somethingCool.someMethod()
 }
 
 func getUserData(promptText string) string {

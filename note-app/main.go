@@ -17,9 +17,8 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	note.Display()
 
-	err = helpers.SaveData(note)
+	err = helpers.OutputData(note)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -30,9 +29,8 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	todo.Display()
 
-	err = helpers.SaveData(todo)
+	err = helpers.OutputData(todo)
 	if err != nil {
 		fmt.Println(err)
 		return

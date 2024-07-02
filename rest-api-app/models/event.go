@@ -48,8 +48,6 @@ func GetAllEvents() ([]Event, error) {
 	var events []Event
 	query := "SELECT * FROM events"
 
-	log.Println("Executing query:", query)
-
 	rows, err := db.DB.Query(query)
 	if err != nil {
 		log.Printf("Error querying all events: %v", err)
@@ -63,12 +61,6 @@ func GetAllEvents() ([]Event, error) {
 		err := rows.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &dateTimeStr, &event.UserID)
 		if err != nil {
 			log.Printf("Error scanning event row: %v", err)
-			return nil, err
-		}
-
-		event.DateTime, err = time.Parse("2006-01-02 15:04:05-07:00", dateTimeStr)
-		if err != nil {
-			log.Printf("Error parsing dateTime: %v", err)
 			return nil, err
 		}
 
@@ -98,12 +90,6 @@ func GetEventByID(id int64) (*Event, error) {
 			return nil, err
 		}
 		log.Printf("Error scanning event row by ID: %v", err)
-		return nil, err
-	}
-
-	event.DateTime, err = time.Parse("2006-01-02 15:04:05-07:00", dateTimeStr)
-	if err != nil {
-		log.Printf("Error parsing dateTime: %v", err)
 		return nil, err
 	}
 
@@ -139,5 +125,33 @@ func (event Event) DeleteEvent() error {
 	defer stmt.Close()
 
 	_, err = stmt.Exec(event.ID)
+	return err
+}
+
+func (event Event) Register(userID int64) error {
+	query := "INSERT INTO registrations (event_id, user_id) VALUES (?, ?)"
+
+	stmt, err := db.DB.Prepare(query)
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(event.ID, userID)
+	return err
+}
+
+func (event Event) CancelRegistration(userID int64) error {
+	query := "DELETE FROM registrations WHERE event_id = ? AND user_id = ?"
+
+	stmt, err := db.DB.Prepare(query)
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(event.ID, userID)
 	return err
 }

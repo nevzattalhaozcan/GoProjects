@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"example.com/rest-api/models"
-	"example.com/rest-api/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,30 +20,16 @@ func getEvents(context *gin.Context) {
 }
 
 func createEvent(context *gin.Context) {
-	token := context.Request.Header.Get("Authorization")
-
-	if token == "" {
-		log.Println("not authorized: empty token")
-		context.JSON(http.StatusUnauthorized, gin.H{"message": "not authorized"})
-		return
-	}
-
-	userID, err := utils.VerifyToken(token)
-
-	if err != nil {
-		log.Printf("not authorized token: %v", err)
-		context.JSON(http.StatusUnauthorized, gin.H{"message": "not authorized"})
-		return
-	}
-
 	var event models.Event
-	err = context.ShouldBindJSON(&event)
+
+	err := context.ShouldBindJSON(&event)
 	if err != nil {
 		log.Printf("Error binding JSON: %v", err)
 		context.JSON(http.StatusBadRequest, gin.H{"message": "could not parse request data"})
 		return
 	}
 
+	userID := context.GetInt64("userID")
 	event.UserID = userID
 
 	err = event.Save()
@@ -81,23 +66,33 @@ func updateEvent(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "could not parse event id"})
 		return
 	}
+	log.Printf("update event id: %v", eventID)
 
-	_, err = models.GetEventByID(eventID)
+	userID := context.GetInt64("userID")
+
+	event, err := models.GetEventByID(eventID)
 	if err != nil {
 		log.Printf("Error fetching event by ID: %v", err)
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "could not fetch event"})
 		return
 	}
 
-	var updatedEvent models.Event
+	if userID != event.UserID {
+		log.Println("could not update event: unauthorized user")
+		context.JSON(http.StatusUnauthorized, gin.H{"message": "not authorized to update event"})
+		return
+	}
 
+	var updatedEvent models.Event
 	err = context.ShouldBindJSON(&updatedEvent)
 	if err != nil {
 		log.Printf("Error binding JSON: %v", err)
 		context.JSON(http.StatusBadRequest, gin.H{"message": "could not parse request data"})
 		return
 	}
+
 	updatedEvent.ID = eventID
+
 	err = updatedEvent.UpdateEvent()
 	if err != nil {
 		log.Printf("Error updating event: %v", err)
